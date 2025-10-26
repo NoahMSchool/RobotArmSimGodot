@@ -1,0 +1,103 @@
+[gd_scene load_steps=10 format=3 uid="uid://befn2b7mhh54o"]
+
+[ext_resource type="PackedScene" uid="uid://dj5r5idql1ks" path="res://arm_segment.tscn" id="1_il2g8"]
+[ext_resource type="Script" path="res://arm.gd" id="1_ppsip"]
+[ext_resource type="Script" path="res://magnet.gd" id="3_3b2af"]
+[ext_resource type="Material" uid="uid://dg8x2xubf2vv" path="res://blueglow.tres" id="4_l2o7f"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_a447k"]
+top_radius = 0.02
+bottom_radius = 0.02
+height = 0.03
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7rs2s"]
+albedo_color = Color(0.470076, 0.470076, 0.470076, 1)
+metallic = 1.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_l1d0n"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_m01t8"]
+radius = 1.0
+height = 2.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cqjqg"]
+transparency = 1
+albedo_color = Color(0.608303, 0.606585, 0.85515, 0.0196078)
+
+[node name="Arm" type="Node3D"]
+script = ExtResource("1_ppsip")
+
+[node name="Base_Cube" parent="." instance=ExtResource("1_il2g8")]
+arm_thickness = 0.16
+arm_length = 0.06
+end_offset = 0.0
+color = Color(0.0846899, 0.0846899, 0.0846899, 1)
+servo_min = 0
+servo_max = 0
+servo_zero = 0
+
+[node name="Base_Seg" parent="Base_Cube" instance=ExtResource("1_il2g8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
+arm_thickness = 0.04
+arm_length = 0.05
+end_offset = 0.03
+extra_length = 0.02
+color = Color(0.372549, 0.372549, 0.372549, 0.372549)
+is_base = true
+servo_min = -90
+servo_max = 90
+servo_zero = 0
+
+[node name="Middle_Seg" parent="Base_Cube/Base_Seg" instance=ExtResource("1_il2g8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03, 0.05, 0)
+arm_thickness = 0.02
+arm_length = 0.16
+end_offset = -0.02
+extra_length = 0.02
+color = Color(0.374139, 0.374139, 0.374139, 1)
+servo_min = -90
+servo_max = 90
+servo_zero = 0
+
+[node name="Effector_Seg" parent="Base_Cube/Base_Seg/Middle_Seg" instance=ExtResource("1_il2g8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.02, 0.16, 0)
+arm_thickness = 0.02
+arm_length = 0.14
+end_offset = 0.0
+extra_length = 0.02
+color = Color(0.554954, 0.554954, 0.554954, 1)
+servo_min = -170
+servo_max = 0
+servo_zero = -90
+
+[node name="Magnet" type="Node3D" parent="Base_Cube/Base_Seg/Middle_Seg/Effector_Seg"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, 0)
+script = ExtResource("3_3b2af")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Base_Cube/Base_Seg/Middle_Seg/Effector_Seg/Magnet"]
+mesh = SubResource("CylinderMesh_a447k")
+surface_material_override/0 = SubResource("StandardMaterial3D_7rs2s")
+
+[node name="HTTP" type="HTTPRequest" parent="."]
+
+[node name="RequestTimer" type="Timer" parent="."]
+wait_time = 0.04
+autostart = true
+
+[node name="Target" type="Node3D" parent="."]
+transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Target"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+mesh = SubResource("SphereMesh_l1d0n")
+surface_material_override/0 = ExtResource("4_l2o7f")
+
+[node name="MaxEnvelopeMesh" type="MeshInstance3D" parent="."]
+visible = false
+mesh = SubResource("SphereMesh_m01t8")
+surface_material_override/0 = SubResource("StandardMaterial3D_cqjqg")
+
+[node name="CSGCombiner3D" type="CSGCombiner3D" parent="."]
+operation = 1
+
+[connection signal="timeout" from="RequestTimer" to="." method="_on_request_timer_timeout"]

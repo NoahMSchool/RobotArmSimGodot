@@ -1,0 +1,90 @@
+[gd_scene load_steps=11 format=3 uid="uid://b24lib0annkpw"]
+
+[ext_resource type="PackedScene" uid="uid://befn2b7mhh54o" path="res://arm.tscn" id="1_1heag"]
+[ext_resource type="Script" path="res://cam_pivot.gd" id="2_67fe4"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_l8gj2"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_sxpop"]
+sky_material = SubResource("ProceduralSkyMaterial_l8gj2")
+
+[sub_resource type="Environment" id="Environment_h4fei"]
+background_mode = 1
+background_color = Color(0.112383, 0.161393, 0.241536, 1)
+background_energy_multiplier = 1.5
+sky = SubResource("Sky_sxpop")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_pgc67"]
+size = Vector2(1, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_khhnf"]
+albedo_color = Color(0.504797, 0.449666, 0.3173, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ckjxs"]
+size = Vector3(0.1, 0.1, 0.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ox01p"]
+albedo_color = Color(0.1705, 0.41085, 0.55, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kgfn2"]
+albedo_color = Color(0.583651, 0.243031, 0.44061, 1)
+
+[node name="Environment" type="Node3D"]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
+shadow_enabled = true
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866024, -0.433016, 0.250001, 0.433016, -0.899518, -0.0580154, 0.250002, 0.0580114, 0.966506, 0, 0, 1)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_h4fei")
+
+[node name="GroundMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.25)
+mesh = SubResource("PlaneMesh_pgc67")
+surface_material_override/0 = SubResource("StandardMaterial3D_khhnf")
+
+[node name="Arm" parent="." instance=ExtResource("1_1heag")]
+
+[node name="CamPivot" type="Node3D" parent="."]
+script = ExtResource("2_67fe4")
+
+[node name="Camera3D" type="Camera3D" parent="CamPivot"]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 0.6, 0.6)
+near = 0.01
+far = 1000.0
+
+[node name="Camera3D2" type="Camera3D" parent="CamPivot"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 1.45, 0)
+near = 0.01
+far = 1000.0
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer"]
+offset_right = 40.0
+offset_bottom = 40.0
+rotation = -0.00038181
+
+[node name="GridContainer" type="GridContainer" parent="CanvasLayer/PanelContainer"]
+layout_mode = 2
+columns = 3
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0.00988294, 0.351083)
+visible = false
+mesh = SubResource("BoxMesh_ckjxs")
+surface_material_override/0 = SubResource("StandardMaterial3D_ox01p")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0.44859, 0.00988294, 0.0115586)
+visible = false
+mesh = SubResource("BoxMesh_ckjxs")
+surface_material_override/0 = SubResource("StandardMaterial3D_kgfn2")

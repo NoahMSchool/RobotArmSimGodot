@@ -1,0 +1,34 @@
+[gd_scene load_steps=5 format=3 uid="uid://dj5r5idql1ks"]
+
+[ext_resource type="Script" path="res://arm_segment.gd" id="1_68hy5"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_uuptu"]
+radius = 0.013
+height = 0.025
+radial_segments = 16
+rings = 8
+
+[sub_resource type="BoxMesh" id="BoxMesh_3opqt"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mumv0"]
+albedo_color = Color(0, 0, 0, 1)
+
+[node name="ArmSeg" type="Node3D"]
+script = ExtResource("1_68hy5")
+servo_min = -1.5708
+servo_max = 1.5708
+servo_zero = null
+
+[node name="ArmRoot" type="MeshInstance3D" parent="."]
+visible = false
+mesh = SubResource("SphereMesh_uuptu")
+skeleton = NodePath("")
+
+[node name="ArmMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 0, 0, 0.1, 0, 0, 0, 0, 0, 0.05, 0)
+mesh = SubResource("BoxMesh_3opqt")
+skeleton = NodePath("")
+surface_material_override/0 = SubResource("StandardMaterial3D_mumv0")
+
+[node name="Tip" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.1, 0)

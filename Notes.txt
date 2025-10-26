@@ -1,0 +1,18 @@
+Servos rotate anticlockwise about positive axis
+
+Quadrant 1 --> +x -z
+Quadrant 2 --> -x -z
+Quadrant 3 --> -x +z
+Quadrant 4 --> +x +z
+
+		  -Z (forward)
+			  ↑  rotation.y = 0°
+			  |
+ -X (left) ←──┼──→ +X (right)
+			  |
+			  ↓
+		  +Z (backward)
+
+
+
+Use CSG combiner to preview work envelope
