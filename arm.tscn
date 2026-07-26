@@ -1,18 +1,16 @@
-[gd_scene load_steps=10 format=3 uid="uid://befn2b7mhh54o"]
+[gd_scene load_steps=11 format=3 uid="uid://befn2b7mhh54o"]
 
 [ext_resource type="PackedScene" uid="uid://dj5r5idql1ks" path="res://arm_segment.tscn" id="1_il2g8"]
 [ext_resource type="Script" path="res://arm.gd" id="1_ppsip"]
 [ext_resource type="Script" path="res://magnet.gd" id="3_3b2af"]
+[ext_resource type="Material" uid="uid://bkqbtx75hgmre" path="res://magnet.tres" id="4_ik071"]
 [ext_resource type="Material" uid="uid://dg8x2xubf2vv" path="res://blueglow.tres" id="4_l2o7f"]
+[ext_resource type="Material" uid="uid://cf505s4sileah" path="res://transparentglow.tres" id="6_5wf1g"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_a447k"]
 top_radius = 0.02
 bottom_radius = 0.02
 height = 0.03
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7rs2s"]
-albedo_color = Color(0.470076, 0.470076, 0.470076, 1)
-metallic = 1.0
 
 [sub_resource type="SphereMesh" id="SphereMesh_l1d0n"]
 
@@ -31,7 +29,7 @@ script = ExtResource("1_ppsip")
 arm_thickness = 0.16
 arm_length = 0.06
 end_offset = 0.0
-color = Color(0.0846899, 0.0846899, 0.0846899, 1)
+color = Color(0.20871, 0.20871, 0.20871, 1)
 servo_min = 0
 servo_max = 0
 servo_zero = 0
@@ -42,7 +40,7 @@ arm_thickness = 0.04
 arm_length = 0.05
 end_offset = 0.03
 extra_length = 0.02
-color = Color(0.372549, 0.372549, 0.372549, 0.372549)
+color = Color(0.554745, 0.211308, 0.19881, 1)
 is_base = true
 servo_min = -90
 servo_max = 90
@@ -54,7 +52,7 @@ arm_thickness = 0.02
 arm_length = 0.16
 end_offset = -0.02
 extra_length = 0.02
-color = Color(0.374139, 0.374139, 0.374139, 1)
+color = Color(0.364261, 0.705609, 0.66654, 1)
 servo_min = -90
 servo_max = 90
 servo_zero = 0
@@ -65,7 +63,7 @@ arm_thickness = 0.02
 arm_length = 0.14
 end_offset = 0.0
 extra_length = 0.02
-color = Color(0.554954, 0.554954, 0.554954, 1)
+color = Color(0.186796, 0.423153, 0.39272, 1)
 servo_min = -170
 servo_max = 0
 servo_zero = -90
@@ -76,7 +74,7 @@ script = ExtResource("3_3b2af")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Base_Cube/Base_Seg/Middle_Seg/Effector_Seg/Magnet"]
 mesh = SubResource("CylinderMesh_a447k")
-surface_material_override/0 = SubResource("StandardMaterial3D_7rs2s")
+surface_material_override/0 = ExtResource("4_ik071")
 
 [node name="HTTP" type="HTTPRequest" parent="."]
 
@@ -98,6 +96,26 @@ mesh = SubResource("SphereMesh_m01t8")
 surface_material_override/0 = SubResource("StandardMaterial3D_cqjqg")
 
 [node name="CSGCombiner3D" type="CSGCombiner3D" parent="."]
+visible = false
+material_override = ExtResource("6_5wf1g")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="CSGCombiner3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.5)
+cast_shadow = 0
+
+[node name="CSGSphere3D" type="CSGSphere3D" parent="CSGCombiner3D/CSGBox3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0.5)
+cast_shadow = 0
 operation = 1
+radius = 1.0
+radial_segments = 32
+rings = 16
+
+[node name="CSGSphere3DSmall" type="CSGSphere3D" parent="CSGCombiner3D/CSGBox3D/CSGSphere3D"]
+cast_shadow = 0
+operation = 2
+radius = 1.0
+radial_segments = 32
+rings = 16
 
 [connection signal="timeout" from="RequestTimer" to="." method="_on_request_timer_timeout"]

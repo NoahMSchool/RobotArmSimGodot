@@ -1,9 +1,11 @@
-extends Node3D
+extends  Node3D
 
-var rotate_time = 3
-var rotate_speed = 2*PI
+var cam_sens = 0.001
+var clicking := false
 
-func _process(delta: float) -> void:
-	return
-	var rotation_dir = Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left")
-	rotate_y(rotation_dir*delta*PI/3)
+func _unhandled_input(event: InputEvent) -> void:
+
+	if event is InputEventMouseMotion and Input.get_action_strength("click")>0:
+		rotation.y -= event.relative.x*cam_sens
+		rotation.x -= event.relative.y*cam_sens
+		rotation.x = clamp(rotation.x, -PI/8, PI/8)

@@ -10,7 +10,7 @@ rings = 8
 
 [sub_resource type="BoxMesh" id="BoxMesh_3opqt"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mumv0"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ivbci"]
 albedo_color = Color(0, 0, 0, 1)
 
 [node name="ArmSeg" type="Node3D"]
@@ -28,7 +28,7 @@ skeleton = NodePath("")
 transform = Transform3D(0, 0, 0, 0, 0.1, 0, 0, 0, 0, 0, 0.05, 0)
 mesh = SubResource("BoxMesh_3opqt")
 skeleton = NodePath("")
-surface_material_override/0 = SubResource("StandardMaterial3D_mumv0")
+surface_material_override/0 = SubResource("StandardMaterial3D_ivbci")
 
 [node name="Tip" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.1, 0)

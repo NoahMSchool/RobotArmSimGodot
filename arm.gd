@@ -5,10 +5,19 @@ var requests_off = false
 @onready var reachable_mat = preload("res://blueglow.tres")
 @onready var unreachable_mat = preload("res://redglow.tres")
 
+@onready var mag_mesh: MeshInstance3D = $Base_Cube/Base_Seg/Middle_Seg/Effector_Seg/Magnet/MeshInstance3D
+@onready var mag_mat = preload("res://magnet.tres")
+@onready var mag_on_mat = preload("res://greenglow.tres")
+
+@onready var work_env_box: CSGBox3D = $CSGCombiner3D/CSGBox3D
+@onready var work_env_sphere: CSGSphere3D = $CSGCombiner3D/CSGBox3D/CSGSphere3D
+@onready var work_env_sphere_small: CSGSphere3D = $CSGCombiner3D/CSGBox3D/CSGSphere3D/CSGSphere3DSmall
+
 @onready var base_cube = $Base_Cube
 @onready var base_seg = $Base_Cube/Base_Seg
 @onready var middle_seg = $Base_Cube/Base_Seg/Middle_Seg
 @onready var end_seg = $Base_Cube/Base_Seg/Middle_Seg/Effector_Seg
+
 
 var base_angle_range : Array[float]
 var middle_angle_range : Array[float]
@@ -30,7 +39,8 @@ var magnet_height : float = 0.025
 		target_node.position = value
 		target_pos = value
 @onready var http_node : HTTPRequest = $HTTP
-var api_base_url = "http://raspberrypi.local:8080"
+@onready var api_base_url = "http://169.254.122.254:8080"
+
 
 @export var arm_speed_degrees = 30
 @onready var arm_speed = deg_to_rad(arm_speed_degrees)
@@ -38,7 +48,7 @@ var api_base_url = "http://raspberrypi.local:8080"
 var save_1 : Vector3 = target_pos
 var save_2 : Vector3 = target_pos
 
-var moved = false
+var moved = true #since last request
 
 #Work Envelope
 @onready var max_envelope_mesh : MeshInstance3D = $MaxEnvelopeMesh
@@ -48,8 +58,9 @@ var max_distance : float
 
 func magnet(state : bool):
 	var state_string = "on" if state else "off"
-	print("mag")
+	http_node.set_tls_options(TLSOptions.client_unsafe())
 	http_node.request(api_base_url+"/magnet?status="+state_string)
+	
 
 func servo_request():
 	if not moved or requests_off:
@@ -67,20 +78,29 @@ func servo_request():
 	#print(url)
 	http_node.request(url)
 	moved = false
+
 	
+	
+
 func _ready() -> void:
 
 	max_distance = end_seg.arm_length + middle_seg.arm_length
 	min_distance = abs(end_seg.arm_length - middle_seg.arm_length)
+	min_distance = 0.075
 	#print(max_distance,  " : ", min_distance)
-	"""
-	max_envelope_mesh.position = Vector3(0,0,base_seg.arm_length+base_cube.arm_length)
-	max_envelope_mesh.scale *= max_distance
-	max_envelope_mesh.visible = true
-	
-	target_mesh.transform.origin.y = -target_radius
-	target_mesh.scale = 2*target_radius*Vector3.ONE
-	"""
+
+	work_env_box.global_position = Vector3(0,0.5,-0.5)
+	work_env_sphere.global_position = $Base_Cube/Base_Seg/Middle_Seg.global_position #Vector3(0,0,base_seg.arm_length+base_cube.arm_length)
+	work_env_sphere.global_position = $Base_Cube/Base_Seg/Middle_Seg.global_position #Vector3(0,0,base_seg.arm_length+base_cube.arm_length)
+
+	work_env_sphere.scale *= max_distance
+	work_env_sphere_small.scale *= min_distance
+
+	#max_envelope_mesh.visible = true
+	#
+	#target_mesh.transform.origin.y = -target_radius
+	#target_mesh.scale = 2*target_radius*Vector3.ONE
+
 	
 	base_angle_range = [base_seg.servo_min_rads, base_seg.servo_max_rads]
 	middle_angle_range = [middle_seg.servo_min_rads, middle_seg.servo_max_rads]
@@ -90,7 +110,22 @@ func _ready() -> void:
 	base_length = base_seg.arm_length
 	middle_length = middle_seg.arm_length
 	end_length = end_seg.arm_length
+	
+	http_node.request_completed.connect(_on_request_completed)
 
+func _on_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray) -> void:
+	print("Result:", result)
+	print("Response code:", response_code)
+	print("Headers:")
+	for header in headers:
+		print("  ", header)
+
+	var text := body.get_string_from_utf8()
+	print("Body text:", text)
+
+	var json = JSON.parse_string(text)
+	if json:
+		print("Parsed JSON:", json)
 
 	
 func _process(delta: float) -> void:
@@ -117,8 +152,10 @@ func _process(delta: float) -> void:
 		
 	if Input.is_action_just_pressed("MagOn"):
 		magnet(true)
+		mag_mesh.material_override = mag_on_mat
 	if Input.is_action_just_pressed("MagOff"):
 		magnet(false)
+		mag_mesh.material_override = mag_mat
 	
 	var target_dir = Vector3(
 		Input.get_action_strength("right")-Input.get_action_strength("left"),
@@ -141,12 +178,14 @@ func _process(delta: float) -> void:
 		if ik_angles:
 			#print(ik_angles)
 			target_mesh.material_override = reachable_mat
+			$CSGCombiner3D.visible = false
 			base_seg.set_seg_rotation(ik_angles[0])
 			middle_seg.set_seg_rotation(ik_angles[1])
 			end_seg.set_seg_rotation(ik_angles[2])
 		
 		else:
 			target_mesh.material_override = unreachable_mat
+			$CSGCombiner3D.visible = true
 			#print("no_solutions to ik")
 	
 
@@ -183,7 +222,6 @@ func calculate_ik_angles():
 	turn_angle = atan2(-to_target.x, -to_target.z)
 	if not(turn_angle > base_angle_range[0] and turn_angle < base_angle_range[1]):
 		return null
-	
 	if length_to_target < min_distance or length_to_target > max_distance:
 		return null
 		
@@ -193,8 +231,6 @@ func calculate_ik_angles():
 	
 	var angle_1 = PI-atan2(sqrt(to_target.x**2+to_target.z**2),-to_target.y)-asin((end_length*sin(center))/length_to_target)
 	var angle_2 = PI-center
-	#print(length_to_target)
-	#print(angle_2)
 	
 	if solvable:
 		return [turn_angle,-angle_1,-angle_2]
